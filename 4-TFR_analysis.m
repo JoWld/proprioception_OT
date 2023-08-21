@@ -57,26 +57,6 @@ for ii = 1:length(subs)
         %% save tfr
         save(outname_tfr, 'tfr','-v7.3');
         disp(['Wrote file: ',outname_tfr])
-%         %% tfr high freq using multitapers
-%         cfg = [];
-%         cfg.output      = 'pow';
-%         cfg.method      = 'mtmconvol';
-%         cfg.taper       = 'dpss';
-%         cfg.foi         = 30:2:100;
-% %         cfg.t_ftimwin   = 5./cfg.foi;
-%         cfg.t_ftimwin   = 0.25*ones(length(cfg.foi),1);
-% %         cfg.tapsmofrq   = 0.4 *cfg.foi;
-%         cfg.tapsmofrq   = 12*ones(length(cfg.foi),1);
-%         cfg.pad         = 'nextpow2';
-%         cfg.toi         = -1.250:0.01:2.500;
-% 
-%         tfr_hf = ft_freqanalysis(cfg, data);
-%         tfr_hf = ft_combineplanar([],tfr_hf);
-%                  
-%         %% save tfr
-%         save(outname_tfr_hf, 'tfr_hf','-v7.3');
-%         disp(['Wrote file: ',outname_tfr_hf])
-%         clear tfr_hf
     end
 end
 
