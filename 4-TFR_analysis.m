@@ -2,8 +2,10 @@
 %%%%% Get frequency-induced responses for each subject in proprioception_OT project
 % in: epoched data for both conditions and subject list 
 % out: evoked data file and TFR data file per subject and condition
+# NOTE: change input (fif_idx) and output filenames when running hand analysis
 
-overwrite_old_files = 0;
+
+overwrite_old_files = 1;
 
 %% Loop through subjects
 for ii = 1:length(subs)
@@ -12,7 +14,7 @@ for ii = 1:length(subs)
     sub_dir = [subID];
     files = dir(sub_dir);
     files = {files.name};
-    fif_idx = find(~cellfun(@isempty,strfind(files,'1-epochs.mat')));
+    fif_idx = find(~cellfun(@isempty,strfind(files,'foot-epochs.mat')));
     infiles = files(fif_idx);
     cd(sub_dir);
     
@@ -23,8 +25,8 @@ for ii = 1:length(subs)
         data_file = infiles{kk};
         
         % Filenames
-        outname_tfr = ['1-tfr.mat'];
-        outname_evoked = ['1-evoked.mat'];
+        outname_tfr = ['foot-tfr.mat'];
+        outname_evoked = ['foot-evoked.mat'];
 
         % Load data
         load(data_file);
