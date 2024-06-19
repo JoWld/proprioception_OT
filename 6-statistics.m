@@ -1,19 +1,24 @@
 %%%%% STATISTICS %%%%%%%
- % this script runs cluster-bsed permutation t tests to compare mu/beta responses healthy
- % participants and OT (independent t test for both conditions separately (summary in stat_beta1 = foot, stat_beta2 = finger) 
- % and t test on the (within-subject) difference between conditions
- % stat_beta_OT is within-subject comparison hand vs foot in OT group
- % stat_beta_crtl is a within-subject comparison hand vs foot in HC group
-% could also add correlation with some clinical score: see line 206 and following  
+ % this script runs cluster-bsed permutation t tests to compare mu responses healthy
+ % participants and OT (independent t test) 
+ 
+ % output: stat_beta1 are results of the comparison of foot stimulation between HC
+ % and OT, stat_beta2 of hand stimulation
+ 
+ % you may want to do the same for other frequency bands, theta is still in the script: see line 290ff 
+ % if interested in within-group comparison between hand and foot stimulation: see line 89ff
+ % could also add correlation with some clinical score: see line 206ff  
+ % If done, you would also need to add variable to save function: line 268ff
 
 badsubs = {}; % subjects to exclude due to too few trials or bad data
 OT_subs = intersect(OT,subs);
 ctrl_subs = intersect(ctrl,subs);
+OT_subs2 = intersect(OT,subs2);
+ctrl_subs2 = intersect(ctrl,subs2);
 
-%% Define bands, using mu/beta for now, theta at end of script if needed
+%% Define bands
 % theta_band      = [4 7];
 betamu_band     = [8 30];
-% lowgamma_band   = [31 40];
 
 %% ########################################################################
 %       Beta/Mu statistics
@@ -76,123 +81,123 @@ disp('done');
 
 %% Interaction with session in beta/mu band
 %Get difference
-load(['/Users/huser/Documents/ot/betaChan1log.mat']);
-disp('loaded data')
+% load(['/Users/huser/Documents/ot/betaChan1log.mat']);
+% disp('loaded data')
+% 
+% OT_betaDiff = cell(1,length(OT_subs));
+% ctrl_betaDiff = cell(1,length(ctrl_subs));
+% OT_betaDiffbs = OT_betaDiff;
+% ctrl_betaDiffbs = ctrl_betaDiff;
+% 
+% cfg           = [];
+% cfg.parameter = 'powspctrm';
+% cfg.operation = '(x1-x2)';
+% % cfg.operation = 'x1-x2';
+% for ii = 1:length(OT_beta1)
+%     OT_betaDiff{ii} = ft_math(cfg, OT_beta2{ii},OT_beta1{ii});
+% end
+% 
+% for ii = 1:length(ctrl_subs)
+%     ctrl_betaDiff{ii} = ft_math(cfg,ctrl_beta2{ii},ctrl_beta1{ii});
+% end
+% 
+% GA_diff1 = ft_freqgrandaverage([],ctrl_betaDiff{:});
+% GA_diff2 = ft_freqgrandaverage([],OT_betaDiff{:});
+% 
+% cfg                 = [];
+% cfg.baseline        = [-inf -0.2];
+% cfg.baselinetype    = 'absolute';
+% cfg.parameter       = 'powspctrm';
+% 
+% for ii = 1:length(OT_beta1)
+%     OT_betaDiffbs{ii} = ft_freqbaseline(cfg, OT_betaDiff{ii});
+% end
+% 
+% for ii = 1:length(ctrl_subs)
+%     ctrl_betaDiffbs{ii} = ft_freqbaseline(cfg,ctrl_betaDiff{ii});
+% end
+% 
+% GA_diff1bs = ft_freqgrandaverage([],ctrl_betaDiffbs{:});
+% GA_diff2bs = ft_freqgrandaverage([],OT_betaDiffbs{:});
+% 
+% % Run stats on difference between session, is equivalent to running a 2x2
+% % ANOVA, but using the difference between hand and foot accounts for
+% % within-subject comparison for session (while group comparison is
+% % between-subjects)
+% cfg = [];
+% cfg.method              = 'montecarlo';
+% cfg.neighbours          = [];
+% cfg.channel             = 'peak_channel';
+% 
+% cfg.design = [ones(1,length(OT_betaDiff)) 2*ones(1,length(ctrl_betaDiff))];
+% cfg.design = [cfg.design; 1:length(cfg.design)];
+% 
+% cfg.statistic           = 'ft_statfun_indepsamplesT';
+% cfg.correctm            = 'cluster';
+% cfg.clustertail         = 0;
+% cfg.clusteralpha        = 0.05;
+% cfg.clusterstatistic = 'maxsum';
+% 
+% cfg.numrandomization    = 1000;
+% cfg.ivar                = 1;            % the 1st row in cfg.design contains the independent variable
+% cfg.tail                = 0;
+% cfg.computeprob         = 'yes';
+% cfg.computecritval      = 'yes';
+% cfg.alpha               = .025;
+% 
+% stat_betaInteraction = ft_freqstatistics(cfg, OT_betaDiffbs{:}, ctrl_betaDiffbs{:});
 
-OT_betaDiff = cell(1,length(OT_subs));
-ctrl_betaDiff = cell(1,length(ctrl_subs));
-OT_betaDiffbs = OT_betaDiff;
-ctrl_betaDiffbs = ctrl_betaDiff;
-
-cfg           = [];
-cfg.parameter = 'powspctrm';
-cfg.operation = '(x1-x2)';
-% cfg.operation = 'x1-x2';
-for ii = 1:length(OT_beta1)
-    OT_betaDiff{ii} = ft_math(cfg, OT_beta2{ii},OT_beta1{ii});
-end
-
-for ii = 1:length(ctrl_subs)
-    ctrl_betaDiff{ii} = ft_math(cfg,ctrl_beta2{ii},ctrl_beta1{ii});
-end
-
-GA_diff1 = ft_freqgrandaverage([],ctrl_betaDiff{:});
-GA_diff2 = ft_freqgrandaverage([],OT_betaDiff{:});
-
-cfg                 = [];
-cfg.baseline        = [-inf -0.2];
-cfg.baselinetype    = 'absolute';
-cfg.parameter       = 'powspctrm';
-
-for ii = 1:length(OT_beta1)
-    OT_betaDiffbs{ii} = ft_freqbaseline(cfg, OT_betaDiff{ii});
-end
-
-for ii = 1:length(ctrl_subs)
-    ctrl_betaDiffbs{ii} = ft_freqbaseline(cfg,ctrl_betaDiff{ii});
-end
-
-GA_diff1bs = ft_freqgrandaverage([],ctrl_betaDiffbs{:});
-GA_diff2bs = ft_freqgrandaverage([],OT_betaDiffbs{:});
-
-% Run stats on difference between session, is equivalent to running a 2x2
-% ANOVA, but using the difference between hand and foot accounts for
-% within-subject comparison for session (while group comparison is
-% between-subjects)
-cfg = [];
-cfg.method              = 'montecarlo';
-cfg.neighbours          = [];
-cfg.channel             = 'peak_channel';
-
-cfg.design = [ones(1,length(OT_betaDiff)) 2*ones(1,length(ctrl_betaDiff))];
-cfg.design = [cfg.design; 1:length(cfg.design)];
-
-cfg.statistic           = 'ft_statfun_indepsamplesT';
-cfg.correctm            = 'cluster';
-cfg.clustertail         = 0;
-cfg.clusteralpha        = 0.05;
-cfg.clusterstatistic = 'maxsum';
-
-cfg.numrandomization    = 1000;
-cfg.ivar                = 1;            % the 1st row in cfg.design contains the independent variable
-cfg.tail                = 0;
-cfg.computeprob         = 'yes';
-cfg.computecritval      = 'yes';
-cfg.alpha               = .025;
-
-stat_betaInteraction = ft_freqstatistics(cfg, OT_betaDiffbs{:}, ctrl_betaDiffbs{:});
-
-%% Within group difference (i.e. not the interaction)
-% OT hand vs foot
-cfg = [];
-cfg.method              = 'montecarlo';
-cfg.neighbours          = [];
-cfg.channel             = 'peak_channel';
-
-cfg.design = [ones(1,length(OT_beta1bs)) 2*ones(1,length(OT_beta2bs))];
-cfg.design = [cfg.design; 1:length(OT_beta1bs) 1:length(OT_beta2bs)]';
-
-cfg.statistic           = 'ft_statfun_depsamplesT';
-cfg.correctm            = 'cluster';
-cfg.clustertail         = 0;
-cfg.clusteralpha        = 0.05;
-cfg.clusterstatistic = 'maxsum';
-
-cfg.numrandomization    = 'all';
-cfg.ivar                = 1;            % the 1st row in cfg.design contains the independent variable
-cfg.uvar                = 2;
-cfg.tail                = 0;
-cfg.computeprob         = 'yes';
-cfg.computecritval      = 'yes';
-cfg.alpha               = .025;
-
-stat_beta_OT = ft_freqstatistics(cfg, OT_beta1bs{:}, OT_beta2bs{:});
-disp('done');
-
-% Ctrl session 1 vs 2
-cfg = [];
-cfg.method              = 'montecarlo';
-cfg.neighbours          = [];
-cfg.channel             = 'peak_channel';
-
-cfg.design = [ones(1,length(ctrl_beta1bs)) 2*ones(1,length(ctrl_beta2bs))];
-cfg.design = [cfg.design; 1:length(ctrl_beta1bs) 1:length(ctrl_beta2bs)]';
-
-cfg.statistic           = 'ft_statfun_depsamplesT';
-cfg.correctm            = 'cluster';
-cfg.clustertail         = 0;
-cfg.clusteralpha        = 0.05;
-cfg.clusterstatistic = 'maxsum';
-
-cfg.numrandomization    = 'all';
-cfg.ivar                = 1;            % the 1st row in cfg.design contains the independent variable
-cfg.uvar                = 2;
-cfg.tail                = 0;
-cfg.computeprob         = 'yes';
-cfg.computecritval      = 'yes';
-cfg.alpha               = .025;
-
-stat_beta_ctrl = ft_freqstatistics(cfg, ctrl_beta1bs{:}, ctrl_beta2bs{:});
+% %% Within group difference (i.e. not the interaction)
+% % OT hand vs foot
+% cfg = [];
+% cfg.method              = 'montecarlo';
+% cfg.neighbours          = [];
+% cfg.channel             = 'peak_channel';
+% 
+% cfg.design = [ones(1,length(OT_beta1bs)) 2*ones(1,length(OT_beta2bs))];
+% cfg.design = [cfg.design; 1:length(OT_beta1bs) 1:length(OT_beta2bs)]';
+% 
+% cfg.statistic           = 'ft_statfun_depsamplesT';
+% cfg.correctm            = 'cluster';
+% cfg.clustertail         = 0;
+% cfg.clusteralpha        = 0.05;
+% cfg.clusterstatistic = 'maxsum';
+% 
+% cfg.numrandomization    = 'all';
+% cfg.ivar                = 1;            % the 1st row in cfg.design contains the independent variable
+% cfg.uvar                = 2;
+% cfg.tail                = 0;
+% cfg.computeprob         = 'yes';
+% cfg.computecritval      = 'yes';
+% cfg.alpha               = .025;
+% 
+% stat_beta_OT = ft_freqstatistics(cfg, OT_beta1bs{:}, OT_beta2bs{:});
+% disp('done');
+% 
+% % Ctrl session 1 vs 2
+% cfg = [];
+% cfg.method              = 'montecarlo';
+% cfg.neighbours          = [];
+% cfg.channel             = 'peak_channel';
+% 
+% cfg.design = [ones(1,length(ctrl_beta1bs)) 2*ones(1,length(ctrl_beta2bs))];
+% cfg.design = [cfg.design; 1:length(ctrl_beta1bs) 1:length(ctrl_beta2bs)]';
+% 
+% cfg.statistic           = 'ft_statfun_depsamplesT';
+% cfg.correctm            = 'cluster';
+% cfg.clustertail         = 0;
+% cfg.clusteralpha        = 0.05;
+% cfg.clusterstatistic = 'maxsum';
+% 
+% cfg.numrandomization    = 'all';
+% cfg.ivar                = 1;            % the 1st row in cfg.design contains the independent variable
+% cfg.uvar                = 2;
+% cfg.tail                = 0;
+% cfg.computeprob         = 'yes';
+% cfg.computecritval      = 'yes';
+% cfg.alpha               = .025;
+% 
+% stat_beta_ctrl = ft_freqstatistics(cfg, ctrl_beta1bs{:}, ctrl_beta2bs{:});
 
 %% Correlation with clinical score 
 
@@ -224,9 +229,8 @@ stat_beta_ctrl = ft_freqstatistics(cfg, ctrl_beta1bs{:}, ctrl_beta2bs{:});
 % 
 % stats_UOTRS = ft_freqstatistics(cfg, OT_beta1bs{:}, OT_beta2bs{:});
 
-save(['/Users/huser/Documents/ot/beta_stats.mat'],'stat_betaInteraction','stat_beta1','stat_beta2');
+save(['/Users/huser/Documents/ot/beta_stats.mat'],'stat_beta1','stat_beta2');
 disp('done');
-
 
 % clear ctrl_beta* OT_beta* stat*
 
