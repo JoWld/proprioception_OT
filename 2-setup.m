@@ -13,6 +13,7 @@ ft_path = '/Applications/fieldtrip';
 % Lists of all subjects/sessions, these may be added manually, first one is for all subjects regardless of group, additional lists for each group
 % subs = subjects for hand
 % subs2 = subjects for foot (in a previous version, there were different subj included due to missing data. in the final version, two lists are actually identical). 
+% four HC were excluded for better matching N =15 / 15
 
 subs = ...
                       {
