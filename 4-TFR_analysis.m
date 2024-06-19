@@ -2,7 +2,7 @@
 %%%%% Get frequency-induced responses for each subject in proprioception_OT project
 % in: epoched data for both conditions and subject list 
 % out: evoked data file and TFR data file per subject and condition
-# NOTE: change input (fif_idx) and output filenames when running hand analysis
+% NOTE: change input (fif_idx) and output filenames when running hand analysis
 
 
 overwrite_old_files = 1;
