@@ -1,15 +1,15 @@
 
 %%%%% This script creates epochs for proprioception_ot project
-% requires preprocessed (ICA) raw data and the subject lists as defined in setup.m 
-%gives you an epochs-file and the accelerometer data
-% STIM channels are usually set to be 1 and 2 for foot and 3 for hand
-% output files are named accordingly: 1-epochs.mat = foot, 2-epochs.mat = hand
-% NOTE: !! Accelerometer artefact rejection is not wokring yet because helper function is missing !!
+% run setup.m first to define directories
+% requires preprocessed (ICA) raw data and gives you an epoch-file
 
-% NOTE: change ACC to left hand if needed (see lines 58ff), i.e., if one of the participants is left-handed
+% STIM channels are set to 2 FOR HAND and 3 FOR FOOT (NB! STI001 = trial
+% onset!)
+% NOTE: change STIM channel, input (fif_idx variable) and output filename (outname_epch) if running hand analysis!!
+% output files: "foot-epochs.mat" and "foot-acc_data.mat"
 
 % set paths
-overwrite_old_files = 0;
+overwrite_old_files = 1;
 
 %% Loop through subjects to load data
 for ii = 1:length(subs)
@@ -18,22 +18,22 @@ for ii = 1:length(subs)
     sub_dir = [subID];
     files = dir(sub_dir);
     files = {files.name};
-    fif_idx = find(~cellfun(@isempty,strfind(files,'ica-raw.fif')));
+    fif_idx = find(~cellfun(@isempty,strfind(files,'foot_ica-raw.fif')));
     infiles = files(fif_idx);
     cd(sub_dir);
     
     fprintf('Now processing subject = %s.', subID);
     disp(['Found ',num2str(length(infiles)),' .fif files for sub ', subID,''])
 
-    for kk = 2:length(infiles)
+    for kk = 1:length(infiles)
         data_file = infiles{kk};
-        outname_epch = [num2str(kk),'-epochs.mat'];
+        outname_epch = ['foot-epochs.mat'];
         if ~exist(outname_epch, 'file') || overwrite_old_files
             % define trial
             cfg = [];
             cfg.dataset = data_file;
             cfg.channel = 'MEG*';
-            cfg.trialdef.eventtype      = ['STI00',num2str(kk)+1];
+            cfg.trialdef.eventtype      = ['STI003'];
             cfg.trialdef.eventvalue     = 5;
             cfg.trialdef.prestim        = 1.500;
             cfg.trialdef.poststim       = 3.500;
@@ -47,7 +47,7 @@ for ii = 1:length(subs)
             
             data = ft_preprocessing(cfg);
             
-            %% Get accelerometer data
+%             %% Get accelerometer data
             hdr = ft_read_header(data_file);
             misc_chan = find(~cellfun(@isempty, strfind(hdr.label, 'MISC')));
 
@@ -74,8 +74,8 @@ for ii = 1:length(subs)
             cfg.trl = trl_def;
             acc_data = ft_redefinetrial(cfg,allEucACC);
             
-%             [~,~,accError] = acc_peak_fun(acc_data,subID);
-%             acc_artefact = trl_def(accError(:,1)==1,1:2);
+            %[~,~,accError] = acc_peak_fun(acc_data,subID);
+            %acc_artefact = trl_def(accError(:,1)==1,1:2);
             
             %% Remove artefacts  
             % Artefact rejection (to get rid of weird jump!)
@@ -110,7 +110,7 @@ for ii = 1:length(subs)
             cfg.offset = -25;
 
             data = ft_redefinetrial(cfg, data);
-            acc_data = ft_redefinetrial(cfg, acc_data);
+            %acc_data = ft_redefinetrial(cfg, acc_data);
             
             % Demean
             cfg = [];
@@ -119,8 +119,8 @@ for ii = 1:length(subs)
             
             data = ft_preprocessing(cfg,data);
 
-            %% SAVE EPOCH DATA
-            save([num2str(kk),'-acc_data.mat'],'acc_data');
+%             %% SAVE EPOCH DATA
+            save(['foot-acc_data.mat'],'acc_data');
             disp('Saved acceleromter data...');
             
             save(outname_epch,'data');
@@ -132,7 +132,6 @@ for ii = 1:length(subs)
         end
     end
     disp(['DONE WITH EPOCHS FOR SUB ',subID]);
-
 end
 
 disp('DONE WITH EPOCHS');
