@@ -1,23 +1,27 @@
-%%%%% This script gets EMG raw data from recordings on leg / forearm, processes them and runs statistics to compare between groups. 
-% addtional statistics comparing time period of interest (0:0.5) with a resting period priot to stimulus onset (-0.5:0). 
+%%%%% This script gets EMG raw data from recordings on leg / forearm, processes them and runs statistics. 
+% comparing time period of interest (0:0.5) with a resting period priot to stimulus onset (-0.5:0). 
+
+%%%%% Get EMG, process and statistics
 
 OT_subs = intersect(OT,subs);
 ctrl_subs = intersect(ctrl,subs);
+ctrl_subs2 = intersect(ctrl,subs2);
+OT_subs2 = intersect(OT,subs2);
 
-%% Load data (get trials from ERF files, extract EMG from raw)
-OT_emg1 = cell(1,length(OT_subs));
+% %% Load data (get trials from ERF files, extract EMG from raw)
+OT_emg1 = cell(1,length(OT_subs2));
 OT_emg2 = cell(1,length(OT_subs));
-ctrl_emg1 = cell(1,length(ctrl_subs));
+ctrl_emg1 = cell(1,length(ctrl_subs2));
 ctrl_emg2 = cell(1,length(ctrl_subs));
 
-OT_emg1_freq = cell(1,length(OT_subs));
+OT_emg1_freq = cell(1,length(OT_subs2));
 OT_emg2_freq = cell(1,length(OT_subs));
-ctrl_emg1_freq = cell(1,length(ctrl_subs));
+ctrl_emg1_freq = cell(1,length(ctrl_subs2));
 ctrl_emg2_freq = cell(1,length(ctrl_subs));
 
-for ii = 1:length(subs)
+for ii = 1:length(subs2)
         cd '/Users/huser/Documents/ot/meg_data/';
-    subID = subs{ii};
+    subID = subs2{ii};
     disp(subID);
     sub_dir = [subID];
     cd(sub_dir);
@@ -25,7 +29,7 @@ for ii = 1:length(subs)
     %%% SESSION 1 %%%
 
     data_file = ['passive_foot_ica-raw.fif'];
-    load(['1-epochs.mat']);
+    load(['foot-epochs.mat']);
     disp('loaded epochs file 1');
     
     % Get trial structure
@@ -71,12 +75,12 @@ for ii = 1:length(subs)
     cfg.baselinewindow = [-inf 0];
     emg_data_rect = ft_preprocessing(cfg,emg_data_rect);
     
-    if any(strcmp(subID,OT_subs))
-        idx = find(strcmp(subID,OT_subs));
+    if any(strcmp(subID,OT_subs2))
+        idx = find(strcmp(subID,OT_subs2));
         OT_emg1{idx} = ft_timelockanalysis([],emg_data_rect);
         OT_emg1{idx}.label = {'EMG004'};
-    elseif any(strcmp(subID,ctrl_subs))
-        idx = find(strcmp(subID,ctrl_subs));
+    elseif any(strcmp(subID,ctrl_subs2))
+        idx = find(strcmp(subID,ctrl_subs2));
         ctrl_emg1{idx} = ft_timelockanalysis([],emg_data_rect);
     end
            
@@ -89,27 +93,34 @@ for ii = 1:length(subs)
     cfg.channel    = 'all';
     cfg.pad        = 'nextpow2'; 
     
-    if any(strcmp(subID,OT_subs))
-        idx = find(strcmp(subID,OT_subs));
+    if any(strcmp(subID,OT_subs2))
+        idx = find(strcmp(subID,OT_subs2));
         OT_emg1_freq{idx} = ft_freqanalysis(cfg,emg_data_slct);
         OT_emg1_freq{idx}.label = {'EMG004'};
 
-    elseif any(strcmp(subID,ctrl_subs))
-        idx = find(strcmp(subID,ctrl_subs));
+    elseif any(strcmp(subID,ctrl_subs2))
+        idx = find(strcmp(subID,ctrl_subs2));
         ctrl_emg1_freq{idx} = ft_freqanalysis(cfg,emg_data_slct);
     end
     
     clear data* emg*
-      
+end
+
+for ii = 1:length(subs)
+        cd '/Users/huser/Documents/ot/meg_data/';
+    subID = subs{ii};
+    disp(subID);
+    sub_dir = [subID];
+    cd(sub_dir);
     %%% SESSION 2 %%%
     data_file = ['passive_hand_ica-raw.fif'];
-    load(['2-epochs.mat']);
+    load(['hand-epochs.mat']);
     disp('loaded epochs file 2');
     
     % Get trial structure
     trl_def = [data.sampleinfo,-1500*ones(length(data.trialinfo),1),data.trialinfo];
     
-    clear data
+    clear dat
     
     disp(['Reading data from ',data_file]);
     
@@ -204,7 +215,7 @@ plot(OT1_avg.time,OT1_avg.avg,'b')
 plot(OT2_avg.time,OT2_avg.avg,'b--')
 plot(ctrl1_avg.time,ctrl1_avg.avg,'r')
 plot(ctrl2_avg.time,ctrl2_avg.avg,'r--')
-axis([-1 2.5 -1e-4 1e-4])
+axis([-1 1.5 -1e-5 1e-5])
 
 figure; hold on
 plot(OT1_avgFreq.freq,OT1_avgFreq.powspctrm,'b')
@@ -235,93 +246,26 @@ for i=1:length(ctrl_emg1_freq)
     plot(ctrl_emg1_freq{i}.freq,ctrl_emg1_freq{i}.powspctrm); hold on
 end; hold off
 
-%% Statistics: Group comparisons
-% OT1 vs Ctrl1
-cfg = [];
-cfg.method              = 'montecarlo';
-cfg.neighbours          = [];
-cfg.channel             = 'EMG004';
-
-cfg.numrandomization    = 1000;
-cfg.ivar                = 1;            % the 1st row in cfg.design contains the independent variable
-cfg.tail                = 0;
-cfg.computeprob         = 'yes';
-cfg.computecritval      = 'yes';
-cfg.alpha               = .025;
-
-cfg.statistic           = 'ft_statfun_indepsamplesT';
-cfg.correctm            = 'cluster';
-cfg.clustertail         = 0;
-cfg.clusteralpha        = 0.05;
-cfg.clusterstatistic    = 'maxsum';
-
-cfg.design = [ones(1,length(OT_emg1_freq)) 2*ones(1,length(ctrl_emg1_freq))];
-cfg.design = [cfg.design; 1:length(cfg.design)];
-
-emg_stat_1v1 = ft_freqstatistics(cfg, OT_emg1_freq{:}, ctrl_emg1_freq{:});
-emg_stat_1v1raw = ft_timelockstatistics(cfg, OT_emg1{:}, ctrl_emg1{:});
-disp('done');
-
-% OT2 vs Ctrl2
-cfg.design = [ones(1,length(OT_emg2_freq)) 2*ones(1,length(ctrl_emg2_freq))];
-cfg.design = [cfg.design; 1:length(cfg.design)];
-
-emg_stat_2v2 = ft_freqstatistics(cfg, OT_emg2_freq{:}, ctrl_emg2_freq{:});
-emg_stat_2v2raw = ft_timelockstatistics(cfg, OT_emg2{:}, ctrl_emg2{:});
-
-disp('done');
-
-% OT1 vs OT2
-cfg.statistic           = 'ft_statfun_depsamplesT';
-cfg.correctm            = 'cluster';
-cfg.clustertail         = 0;
-cfg.clusteralpha        = 0.05;
-cfg.clusterstatistic    = 'maxsum';
-
-cfg.design  = [ones(1,length(OT_emg1_freq)) 2*ones(1,length(OT_emg2_freq))];
-cfg.design  = [cfg.design; [1:length(OT_emg1_freq),1:length(OT_emg2_freq)]];
-cfg.ivar    = 1;
-cfg.uvar    = 2;
-
-emg_stat_1v2OT = ft_freqstatistics(cfg, OT_emg1_freq{:}, OT_emg2_freq{:});
-emg_stat_1v2OTraw = ft_timelockstatistics(cfg, OT_emg1{:}, OT_emg2{:});
-disp('done');
-
-% Ctrl1 vs Ctrl2
-cfg.design  = [ones(1,length(ctrl_emg1_freq)) 2*ones(1,length(ctrl_emg2_freq(:)))];
-cfg.design  = [cfg.design; [1:length(ctrl_emg1_freq),1:length(ctrl_emg2_freq(:))]];
-
-emg_stat_1v2ctrl = ft_freqstatistics(cfg, ctrl_emg1_freq{:}, ctrl_emg2_freq{:});
-emg_stat_1v2ctrlraw = ft_timelockstatistics(cfg, ctrl_emg1{:}, ctrl_emg2{:});
-disp('done');
-
-%% Save
-save(fullfile('/Users/huser/Documents/ot/EMG_stats.mat'), ...
-    'emg_stat_1v2ctrl','emg_stat_1v2ctrlraw', ...
-    'emg_stat_1v2OT', 'emg_stat_1v2OTraw', ...
-    'emg_stat_2v2','emg_stat_2v2raw', ...
-    'emg_stat_1v1','emg_stat_1v1raw','-v7.3');
-disp('Done')
     
 % load(fullfile(dirs.output,'EMG_stats.mat'))
 
 %% Statistics: baseline vs. movement comparisons
 %% Select data
-OT1_emgBS = cell(1,length(OT_subs));
-OT1_emgMV = cell(1,length(OT_subs));
-OT2_emgMV = cell(1,length(OT_subs));
-OT2_emgBS = cell(1,length(OT_subs));
-ctrl1_emgBS = cell(1,length(ctrl_subs));
-ctrl1_emgMV = cell(1,length(ctrl_subs));
-ctrl2_emgMV = cell(1,length(ctrl_subs));
-ctrl2_emgBS = cell(1,length(ctrl_subs));
+OT1_emgBS = cell(1,length(OT_subs2));
+OT1_emgMV = cell(1,length(OT_subs2));
+OT2_emgMV = cell(1,length(OT_subs2));
+OT2_emgBS = cell(1,length(OT_subs2));
+ctrl1_emgBS = cell(1,length(ctrl_subs2));
+ctrl1_emgMV = cell(1,length(ctrl_subs2));
+ctrl2_emgMV = cell(1,length(ctrl_subs2));
+ctrl2_emgBS = cell(1,length(ctrl_subs2));
 
 cfgmv = [];
 cfgmv.latency = [0 .5];
 cfgbs = [];
 cfgbs.latency = [-0.5 0];
 
-for i = 1:length(OT_subs)
+for i = 1:length(OT_subs2)
     OT1_emgMV{i} = ft_selectdata(cfgmv, OT_emg1{i});
     OT1_emgBS{i} = ft_selectdata(cfgbs, OT_emg1{i});
     OT2_emgMV{i} = ft_selectdata(cfgmv, OT_emg2{i});
@@ -329,7 +273,7 @@ for i = 1:length(OT_subs)
     OT1_emgBS{i}.time = OT1_emgMV{i}.time;
     OT2_emgBS{i}.time = OT2_emgMV{i}.time;
 end
-for i = 1:length(ctrl_subs)
+for i = 1:length(ctrl_subs2)
     ctrl1_emgMV{i} = ft_selectdata(cfgmv, ctrl_emg1{i});
     ctrl1_emgBS{i} = ft_selectdata(cfgbs, ctrl_emg1{i});
     ctrl2_emgMV{i} = ft_selectdata(cfgmv, ctrl_emg2{i});
