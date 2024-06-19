@@ -1,5 +1,6 @@
 %%%%%% Setup script for proprioception_ot
-% This script defines some basic variables and paths that will be used in all additional scripts.
+% This script defines some basic variables and paths that will be used in
+% all additional scripts.
 
 close all
 clear all
@@ -12,12 +13,9 @@ ft_path = '/Applications/fieldtrip';
 
 % Lists of all subjects/sessions, these may be added manually, first one is for all subjects regardless of group, additional lists for each group
 % subs = subjects for hand
-% subs2 = subjects for foot (in a previous version, there were different subj included due to missing data. in the final version, two lists are actually identical). 
-% four HC were excluded for better matching N =15 / 15
-
+% subs2 = subjects for foot (foot data missinf for 1070 and 1077)
 subs = ...
                       {
-                        '0994', 
                         '1010', 
                        '1012',
                        '1013',
@@ -32,6 +30,7 @@ subs = ...
                         '1029',
                         '1030',
                         '1041', 
+                        '1039',
                      %   '1040', 
                         '1042', 
                        '1043', 
@@ -50,14 +49,13 @@ subs = ...
                           '1070',
                        % '1071',
                         '1076',
-                         '1077'
+                         '1077', 
                      };
 
 subs = sort(subs);
 
 subs2 = ...
                     {
-                    '0994',
                         '1010', 
                        '1012',
                      '1013',
@@ -71,6 +69,7 @@ subs2 = ...
                         '1028', 
                         '1029',
                         '1030',
+                        '1039',
                         '1041', 
                        % '1040', 
                         '1042', 
@@ -94,6 +93,7 @@ subs2 = ...
                      };
 
 subs2 = sort(subs2);
+
 OT = ...
                      {
                         '1010', 
@@ -114,8 +114,8 @@ OT = ...
                       };
 ctrl = ...
                      {
-                     '0994',   
                      '1026', 
+                     '1039',
                         '1040',
                         '1041',
                         '1042', 
@@ -135,5 +135,5 @@ ctrl = ...
                         '1077'
                       };
 
-
+          
 % End
