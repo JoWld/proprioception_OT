@@ -100,7 +100,7 @@ cfg.colorbar_label = 'Power relative to baseline period';
 % HAND TOPOPLOTS ACROSS TIME
 figure; ft_topoplotTFR(cfg,avgTFR.ctrl2); colorbar
 saveas(gcf,'topo2_crtl_hand.png')
-figure; ft_topoplotTFR(cfg.multi,avgTFR.OT2); colorbar
+figure; ft_topoplotTFR(cfg,avgTFR.OT2); colorbar
 saveas(gcf,'topo2_OT_hand.png')
 % FOOT TOPOPLOTS ACROSS TIME
 figure; ft_topoplotTFR(cfg,avgTFR.ctrl1); colorbar
