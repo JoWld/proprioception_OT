@@ -7,9 +7,13 @@ clear all
 restoredefaultpath
 
 %define fieldtrip path and run defaults
-addpath /Applications/fieldtrip
+if strcmp(getenv('USER'), 'mikkel')
+    ft_path = '~/fieldtrip/fieldtrip';
+else
+    ft_path = '/Applications/fieldtrip';
+end
+addpath(ft_path)
 ft_defaults
-ft_path = '/Applications/fieldtrip';
 
 % Lists of all subjects/sessions, these may be added manually, first one is for all subjects regardless of group, additional lists for each group
 % subs = subjects for hand
@@ -134,6 +138,5 @@ ctrl = ...
                         '1071',
                         '1077'
                       };
-
-          
+        
 % End

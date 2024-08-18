@@ -1,0 +1,8 @@
+# .gitignore
+
+# Files
+*.asv
+
+# Folders
+output/
+meg_data/
